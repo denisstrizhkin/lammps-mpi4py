@@ -1,0 +1,14 @@
+[project]
+name = "lammps-mpi4py"
+version = "0.1.0"
+description = "Helps to run lammps module with mpi4py"
+readme = "README.md"
+authors = [
+    { name = "Denis Strizhkin", email = "strdenis02@gmail.com" } 
+]
+requires-python = ">=3.12"
+dependencies = ["mpi4py"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
