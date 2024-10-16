@@ -1,25 +1,31 @@
 from lammps import lammps  # type: ignore
 import functools
 from mpi4py import MPI
-from typing import Callable, Concatenate
+from typing import Callable, Concatenate, Optional
 
 
 class LammpsMPIException(Exception): ...
 
 
 class LammpsMPI:
-    def __init__(self, lmp: lammps, comm_world: MPI.Intracomm, master: int) -> None:
-        self.lmp = lmp
-        self.comm_world = comm_world
+    def __init__(
+        self,
+        comm: MPI.Intracomm,
+        master: int,
+        name: str = "",
+        cmdargs: Optional[list[str]] = None,
+    ) -> None:
+        self.lmp = lammps(name=name, cmdargs=cmdargs, comm=comm)
+        self.comm = comm
         self.master = master
 
     def listen(self) -> None:
-        if self.comm_world.Get_rank() == self.master:
+        if self.comm.Get_rank() == self.master:
             raise LammpsMPIException("Shouldn't call listen() for master rank")
         while True:
-            data = self.comm_world.recv(source=self.master, tag=0)
+            data = self.comm.recv(source=self.master, tag=0)
             method = getattr(self.lmp, data["method"])
-            method(*data["args"])
+            method(*data["args"], **data["kwargs"])
             if data["method"] == "close":
                 break
 
@@ -31,11 +37,11 @@ class LammpsMPI:
 
         @functools.wraps(fn)
         def wrapped(self, *args: P.args, **kwargs: P.kwargs) -> R:
-            if self.comm_world.Get_rank() != self.master:
+            if self.comm.Get_rank() != self.master:
                 raise LammpsMPIException("Shouldn't send commands from slave ranks")
-            for rank in range(self.comm_world.Get_size()):
+            for rank in range(self.comm.Get_size()):
                 if rank != self.master:
-                    self.comm_world.send(
+                    self.comm.send(
                         {"method": method, "args": args, "kwargs": kwargs},
                         dest=rank,
                         tag=0,
