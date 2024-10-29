@@ -55,6 +55,10 @@ class LammpsMPI:
         return
 
     @_lmp_command
+    def commands_list(self, cmdlist: list[str]) -> None:
+        return
+
+    @_lmp_command
     def commands_string(self, multicmd: str) -> None:
         return
 
@@ -67,6 +71,14 @@ class LammpsMPI:
     @_lmp_command
     def file(self, path: str) -> None:
         return
+
+    @_lmp_command
+    def set_internal_variable(self, name: str, value: float) -> int:
+        return int()
+
+    @_lmp_command
+    def set_string_variable(self, name: str, value: str) -> int:
+        return int()
 
     @_lmp_command
     def version(self) -> int:
