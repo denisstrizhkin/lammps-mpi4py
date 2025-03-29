@@ -15,16 +15,16 @@ class LammpsMPI:
         name: str = "",
         cmdargs: Optional[list[str]] = None,
     ) -> None:
-        self.lmp = lammps(name=name, cmdargs=cmdargs, comm=comm)
-        self.comm = comm
-        self.master = master
+        self._lmp = lammps(name=name, cmdargs=cmdargs, comm=comm)
+        self._comm = comm
+        self._master = master
 
     def listen(self) -> None:
-        if self.comm.Get_rank() == self.master:
+        if self._comm.Get_rank() == self._master:
             raise LammpsMPIException("Shouldn't call listen() for master rank")
         while True:
-            data = self.comm.recv(source=self.master, tag=0)
-            method = getattr(self.lmp, data["method"])
+            data = self._comm.recv(source=self._master, tag=0)
+            method = getattr(self._lmp, data["method"])
             try:
                 method(*data["args"], **data["kwargs"])
             except Exception:
@@ -40,16 +40,16 @@ class LammpsMPI:
 
         @functools.wraps(fn)
         def wrapped(self, *args: P.args, **kwargs: P.kwargs) -> R:
-            if self.comm.Get_rank() != self.master:
+            if self._comm.Get_rank() != self._master:
                 raise LammpsMPIException("Shouldn't send commands from slave ranks")
-            for rank in range(self.comm.Get_size()):
-                if rank != self.master:
-                    self.comm.send(
+            for rank in range(self._comm.Get_size()):
+                if rank != self._master:
+                    self._comm.send(
                         {"method": method, "args": args, "kwargs": kwargs},
                         dest=rank,
                         tag=0,
                     )
-            return getattr(self.lmp, method)(*args, **kwargs)
+            return getattr(self._lmp, method)(*args, **kwargs)
 
         return wrapped
 
@@ -94,3 +94,13 @@ class LammpsMPI:
     @_lmp_command
     def close(self) -> None:
         return
+
+
+def run(f: Callable[[LammpsMPI], None]) -> None:
+    comm = MPI.COMM_WORLD
+    lmp = LammpsMPI(comm, 0)
+    if comm.Get_rank() == 0:
+        f(lmp)
+        lmp.close()
+    else:
+        lmp.listen()
