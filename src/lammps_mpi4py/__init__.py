@@ -25,14 +25,17 @@ class LammpsMPI:
         while True:
             data = self.comm.recv(source=self.master, tag=0)
             method = getattr(self.lmp, data["method"])
-            method(*data["args"], **data["kwargs"])
+            try:
+                method(*data["args"], **data["kwargs"])
+            except Exception:
+                break
             if data["method"] == "close":
                 break
 
     @staticmethod
-    def _lmp_command[
-        C: LammpsMPI, **P, R
-    ](fn: Callable[Concatenate[C, P], R]) -> Callable[Concatenate[C, P], R]:
+    def _lmp_command[C: LammpsMPI, **P, R](
+        fn: Callable[Concatenate[C, P], R],
+    ) -> Callable[Concatenate[C, P], R]:
         method = fn.__name__
 
         @functools.wraps(fn)
@@ -71,6 +74,10 @@ class LammpsMPI:
     @_lmp_command
     def file(self, path: str) -> None:
         return
+
+    @_lmp_command
+    def get_thermo(self, name: str) -> float | None:
+        return float()
 
     @_lmp_command
     def set_internal_variable(self, name: str, value: float) -> int:
