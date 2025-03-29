@@ -1,8 +1,6 @@
 # lammps-mpi4py
 
-## Example
-
-### Simple
+## Simple Example
 
 ```python
 import lammps_mpi4py
@@ -29,7 +27,7 @@ Total wall time: 0:00:00
 Lammps version: 20240829
 ```
 
-### Custom
+## Custom Example
 
 ```python
 from mpi4py import MPI
