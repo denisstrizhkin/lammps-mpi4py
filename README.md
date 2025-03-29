@@ -5,7 +5,7 @@
 ### Simple
 
 ```python
-import lammps_mpi4py                                                                  
+import lammps_mpi4py
 
 
 def main(lmp: lammps_mpi4py.LammpsMPI):
@@ -17,10 +17,22 @@ if __name__ == "__main__":
     lammps_mpi4py.run(main)
 ```
 
+results
+
+```console
+> mpirun -n 4 python examples/simple.py
+LAMMPS (29 Aug 2024)
+WARNING: Using I/O redirection is unreliable with parallel runs. Better to use the -in switch to read input files. (src/lammps.cpp:571)
+OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
+  using 1 OpenMP thread(s) per MPI task
+Total wall time: 0:00:00
+Lammps version: 20240829
+```
+
 ### Custom
 
 ```python
-from mpi4py import MPI                                                                         
+from mpi4py import MPI
 from lammps_mpi4py import LammpsMPI
 
 
@@ -46,7 +58,7 @@ if __name__ == "__main__":
 run
 
 ```console
-> mpirun -n 4 python example.py
+> mpirun -n 4 python examples/custom.py 
 LAMMPS (29 Aug 2024)
 WARNING: Using I/O redirection is unreliable with parallel runs. Better to use the -in switch to read input files. (src/lammps.cpp:571)
 OMP_NUM_THREADS environment is not set. Defaulting to 1 thread. (src/comm.cpp:98)
