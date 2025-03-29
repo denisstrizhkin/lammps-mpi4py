@@ -2,12 +2,29 @@
 
 ## Example
 
+### Simple
+
+```python
+import lammps_mpi4py                                                                  
+
+
+def main(lmp: lammps_mpi4py.LammpsMPI):
+    # Now you can write code in a serial manner
+    print(f"Lammps version: {lmp.version()}")
+
+
+if __name__ == "__main__":
+    lammps_mpi4py.run(main)
+```
+
+### Custom
+
 ```python
 from mpi4py import MPI                                                                         
 from lammps_mpi4py import LammpsMPI
 
 
-def main(lmp):
+def main(lmp: LammpsMPI):
     # Now you can write code in a serial manner
     print(f"Lammps version: {lmp.version()}")
 
